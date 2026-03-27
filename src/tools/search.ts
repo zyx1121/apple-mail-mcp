@@ -45,7 +45,7 @@ export function registerSearchTools(server: McpServer) {
       const target = account
         ? (mailbox
           ? `mailbox "${escapeForAppleScript(mailbox)}" of account "${escapeForAppleScript(account)}"`
-          : `inbox of account "${escapeForAppleScript(account)}"`)
+          : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`)
         : "inbox";
 
       // Subject search: use native AppleScript filter

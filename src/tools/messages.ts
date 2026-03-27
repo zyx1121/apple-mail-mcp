@@ -5,7 +5,7 @@ import { success, error, withErrorHandling } from "../helpers.js";
 
 function buildMailboxTarget(account?: string, mailbox?: string): string {
   if (account && mailbox) return `mailbox "${mailbox}" of account "${account}"`;
-  if (account) return `inbox of account "${account}"`;
+  if (account) return `mailbox "INBOX" of account "${account}"`;
   return "inbox";
 }
 
@@ -98,7 +98,7 @@ end tell`;
       if (account) {
         const target = mailbox
           ? `mailbox "${escapeForAppleScript(mailbox)}" of account "${escapeForAppleScript(account)}"`
-          : `inbox of account "${escapeForAppleScript(account)}"`;
+          : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`;
 
         const script = `
 tell application "Mail"
@@ -137,7 +137,7 @@ end tell`;
         try {
           const script = `
 tell application "Mail"
-  set m to message id ${message_id} of inbox of account "${acctName}"
+  set m to message id ${message_id} of mailbox "INBOX" of account "${acctName}"
   set subj to subject of m
   set sndr to sender of m
   set rcvd to date received of m as string
@@ -181,7 +181,7 @@ end tell`;
       const target = account
         ? (mailbox
           ? `mailbox "${escapeForAppleScript(mailbox)}" of account "${escapeForAppleScript(account)}"`
-          : `inbox of account "${escapeForAppleScript(account)}"`)
+          : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`)
         : "inbox";
 
       await runAppleScript(
