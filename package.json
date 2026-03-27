@@ -1,12 +1,12 @@
 {
   "name": "@zyx1121/apple-mail-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for Apple Mail — read, search, and manage emails via Claude Code",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "apple-mail-mcp": "./dist/index.js"
+    "apple-mail-mcp": "dist/index.js"
   },
   "files": [
     "dist"
