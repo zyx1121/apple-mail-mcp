@@ -223,7 +223,7 @@ end tell`);
       message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().optional().describe("Account name"),
       mailbox: z.string().optional().describe("Mailbox name"),
-      flagged: z.boolean().default(true).describe("true to flag, false to unflag"),
+      flagged: z.coerce.boolean().default(true).describe("true to flag, false to unflag"),
     },
     withErrorHandling(async ({ message_id, account, mailbox, flagged }) => {
       const target = account
