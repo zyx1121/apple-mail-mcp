@@ -102,15 +102,15 @@ end tell`;
 
         const script = `
 tell application "Mail"
-  set m to message id ${message_id} of ${target}
+  set m to first message of ${target} whose id is ${message_id}
   set subj to subject of m
   set sndr to sender of m
   set rcvd to date received of m as string
   set rd to read status of m
   set cnt to content of m
-  set toList to address of every to recipient of m
-  set ccList to address of every cc recipient of m
-  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toList & "\\n===FIELD===\\n" & ccList
+  set toStr to (address of every to recipient of m) as string
+  set ccStr to (address of every cc recipient of m) as string
+  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
 end tell`;
 
         const raw = await runAppleScript(script);
@@ -137,15 +137,15 @@ end tell`;
         try {
           const script = `
 tell application "Mail"
-  set m to message id ${message_id} of mailbox "INBOX" of account "${acctName}"
+  set m to first message of mailbox "INBOX" of account "${acctName}" whose id is ${message_id}
   set subj to subject of m
   set sndr to sender of m
   set rcvd to date received of m as string
   set rd to read status of m
   set cnt to content of m
-  set toList to address of every to recipient of m
-  set ccList to address of every cc recipient of m
-  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toList & "\\n===FIELD===\\n" & ccList
+  set toStr to (address of every to recipient of m) as string
+  set ccStr to (address of every cc recipient of m) as string
+  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
 end tell`;
           const raw = await runAppleScript(script);
           const fields = raw.split("\n===FIELD===\n");
@@ -184,9 +184,11 @@ end tell`;
           : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`)
         : "inbox";
 
-      await runAppleScript(
-        `tell application "Mail" to set read status of message id ${message_id} of ${target} to true`,
-      );
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of ${target} whose id is ${message_id}
+  set read status of m to true
+end tell`);
       return success({ message_id, marked_read: true });
     }),
   );
