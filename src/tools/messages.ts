@@ -89,7 +89,7 @@ end tell`;
     "mail_read_message",
     "Read the full content of a specific message",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().optional().describe("Account name (speeds up lookup)"),
       mailbox: z.string().optional().describe("Mailbox name (speeds up lookup)"),
     },
@@ -114,7 +114,7 @@ tell application "Mail"
 end tell`;
 
         const raw = await runAppleScript(script);
-        const fields = raw.split("\n===FIELD===\n");
+        const fields = raw.split(/\n===FIELD===\n?/);
         return success({
           id: message_id,
           subject: fields[0] || "",
@@ -148,7 +148,7 @@ tell application "Mail"
   return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & isRead & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
 end tell`;
           const raw = await runAppleScript(script);
-          const fields = raw.split("\n===FIELD===\n");
+          const fields = raw.split(/\n===FIELD===\n?/);
           return success({
             id: message_id,
             account: acctName,
@@ -173,7 +173,7 @@ end tell`;
     "mail_mark_read",
     "Mark a message as read",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().optional().describe("Account name"),
       mailbox: z.string().optional().describe("Mailbox name"),
     },
@@ -197,7 +197,7 @@ end tell`);
     "mail_mark_unread",
     "Mark a message as unread",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().optional().describe("Account name"),
       mailbox: z.string().optional().describe("Mailbox name"),
     },
@@ -220,7 +220,7 @@ end tell`);
     "mail_flag",
     "Flag or unflag a message",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().optional().describe("Account name"),
       mailbox: z.string().optional().describe("Mailbox name"),
       flagged: z.boolean().default(true).describe("true to flag, false to unflag"),
@@ -244,7 +244,7 @@ end tell`);
     "mail_move",
     "Move a message to another mailbox",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().describe("Account name"),
       from_mailbox: z.string().default("INBOX").describe("Source mailbox name"),
       to_mailbox: z.string().describe("Destination mailbox name"),
@@ -264,7 +264,7 @@ end tell`);
     "mail_delete",
     "Delete a message (moves to Deleted Messages / Trash)",
     {
-      message_id: z.number().int().describe("Message ID"),
+      message_id: z.coerce.number().int().describe("Message ID"),
       account: z.string().describe("Account name"),
       mailbox: z.string().default("INBOX").describe("Mailbox containing the message"),
     },
