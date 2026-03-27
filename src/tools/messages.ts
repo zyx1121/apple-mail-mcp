@@ -106,11 +106,11 @@ tell application "Mail"
   set subj to subject of m
   set sndr to sender of m
   set rcvd to date received of m as string
-  set rd to read status of m
+  set isRead to (read status of m)
   set cnt to content of m
   set toStr to (address of every to recipient of m) as string
   set ccStr to (address of every cc recipient of m) as string
-  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
+  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & isRead & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
 end tell`;
 
         const raw = await runAppleScript(script);
@@ -141,11 +141,11 @@ tell application "Mail"
   set subj to subject of m
   set sndr to sender of m
   set rcvd to date received of m as string
-  set rd to read status of m
+  set isRead to (read status of m)
   set cnt to content of m
   set toStr to (address of every to recipient of m) as string
   set ccStr to (address of every cc recipient of m) as string
-  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & rd & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
+  return subj & "\\n===FIELD===\\n" & sndr & "\\n===FIELD===\\n" & rcvd & "\\n===FIELD===\\n" & isRead & "\\n===FIELD===\\n" & cnt & "\\n===FIELD===\\n" & toStr & "\\n===FIELD===\\n" & ccStr
 end tell`;
           const raw = await runAppleScript(script);
           const fields = raw.split("\n===FIELD===\n");
