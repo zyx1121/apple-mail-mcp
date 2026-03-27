@@ -33,6 +33,35 @@ export function registerAccountTools(server: McpServer) {
   );
 
   server.tool(
+    "mail_list_mailboxes",
+    "List mailboxes for an account with unread counts",
+    {
+      account: z.string().describe("Account name"),
+    },
+    withErrorHandling(async ({ account }) => {
+      const script = `
+tell application "Mail"
+  set output to ""
+  repeat with mb in (every mailbox of account "${account}")
+    set mbName to name of mb
+    set unread to unread count of mb
+    set output to output & mbName & "\\t" & unread & "\\n"
+  end repeat
+  return output
+end tell`;
+      const raw = await runAppleScript(script);
+      if (!raw) return success([]);
+      const mailboxes = [];
+      for (const line of raw.split("\n")) {
+        if (!line) continue;
+        const [name, unread] = line.split("\t");
+        mailboxes.push({ name, unread: parseInt(unread, 10) });
+      }
+      return success(mailboxes);
+    }),
+  );
+
+  server.tool(
     "mail_count_unread",
     "Count unread messages in a mailbox",
     {

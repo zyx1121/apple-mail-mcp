@@ -192,4 +192,90 @@ end tell`);
       return success({ message_id, marked_read: true });
     }),
   );
+
+  server.tool(
+    "mail_mark_unread",
+    "Mark a message as unread",
+    {
+      message_id: z.number().int().describe("Message ID"),
+      account: z.string().optional().describe("Account name"),
+      mailbox: z.string().optional().describe("Mailbox name"),
+    },
+    withErrorHandling(async ({ message_id, account, mailbox }) => {
+      const target = account
+        ? (mailbox
+          ? `mailbox "${escapeForAppleScript(mailbox)}" of account "${escapeForAppleScript(account)}"`
+          : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`)
+        : "inbox";
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of ${target} whose id is ${message_id}
+  set read status of m to false
+end tell`);
+      return success({ message_id, marked_unread: true });
+    }),
+  );
+
+  server.tool(
+    "mail_flag",
+    "Flag or unflag a message",
+    {
+      message_id: z.number().int().describe("Message ID"),
+      account: z.string().optional().describe("Account name"),
+      mailbox: z.string().optional().describe("Mailbox name"),
+      flagged: z.boolean().default(true).describe("true to flag, false to unflag"),
+    },
+    withErrorHandling(async ({ message_id, account, mailbox, flagged }) => {
+      const target = account
+        ? (mailbox
+          ? `mailbox "${escapeForAppleScript(mailbox)}" of account "${escapeForAppleScript(account)}"`
+          : `mailbox "INBOX" of account "${escapeForAppleScript(account)}"`)
+        : "inbox";
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of ${target} whose id is ${message_id}
+  set flagged status of m to ${flagged}
+end tell`);
+      return success({ message_id, flagged });
+    }),
+  );
+
+  server.tool(
+    "mail_move",
+    "Move a message to another mailbox",
+    {
+      message_id: z.number().int().describe("Message ID"),
+      account: z.string().describe("Account name"),
+      from_mailbox: z.string().default("INBOX").describe("Source mailbox name"),
+      to_mailbox: z.string().describe("Destination mailbox name"),
+    },
+    withErrorHandling(async ({ message_id, account, from_mailbox, to_mailbox }) => {
+      const esc = escapeForAppleScript;
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of mailbox "${esc(from_mailbox)}" of account "${esc(account)}" whose id is ${message_id}
+  move m to mailbox "${esc(to_mailbox)}" of account "${esc(account)}"
+end tell`);
+      return success({ message_id, moved_to: to_mailbox });
+    }),
+  );
+
+  server.tool(
+    "mail_delete",
+    "Delete a message (moves to Deleted Messages / Trash)",
+    {
+      message_id: z.number().int().describe("Message ID"),
+      account: z.string().describe("Account name"),
+      mailbox: z.string().default("INBOX").describe("Mailbox containing the message"),
+    },
+    withErrorHandling(async ({ message_id, account, mailbox }) => {
+      const esc = escapeForAppleScript;
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of mailbox "${esc(mailbox)}" of account "${esc(account)}" whose id is ${message_id}
+  delete m
+end tell`);
+      return success({ message_id, deleted: true });
+    }),
+  );
 }
