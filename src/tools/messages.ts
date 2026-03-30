@@ -19,6 +19,8 @@ function formatDate(isoDate: string): string {
 
 interface MessageSummary {
   id: number;
+  account: string;
+  mailbox: string;
   subject: string;
   sender: string;
   date: string;
@@ -31,13 +33,15 @@ function parseMessages(raw: string): MessageSummary[] {
   for (const line of raw.split("\n")) {
     if (!line) continue;
     const parts = line.split("\t");
-    if (parts.length < 5) continue;
+    if (parts.length < 7) continue;
     messages.push({
       id: parseInt(parts[0], 10),
-      subject: parts[1],
-      sender: parts[2],
-      date: parts[3],
-      read: parts[4] === "true",
+      account: parts[1],
+      mailbox: parts[2],
+      subject: parts[3],
+      sender: parts[4],
+      date: parts[5],
+      read: parts[6] === "true",
     });
   }
   return messages;
@@ -67,6 +71,15 @@ export function registerMessageTools(server: McpServer) {
         ? ` whose ${conditions.join(" and ")}`
         : "";
 
+      // When querying the global inbox (no account specified), mailbox of m
+      // may return the physical storage name (e.g. "全部郵件" for Gmail) which
+      // is unusable for subsequent operations. Report "INBOX" instead, since
+      // that's the universal IMAP alias all accounts accept.
+      const useGlobalInbox = !account;
+      const mailboxExpr = useGlobalInbox
+        ? `"INBOX"`
+        : `(name of mbox)`;
+
       const script = `
 tell application "Mail"
   set msgs to (every message of ${target}${whereClause})
@@ -75,7 +88,8 @@ tell application "Mail"
   set output to ""
   repeat with i from 1 to maxCount
     set m to item i of msgs
-    set output to output & (id of m) & "\\t" & (subject of m) & "\\t" & (sender of m) & "\\t" & (date received of m as string) & "\\t" & (read status of m) & "\\n"
+    set mbox to mailbox of m
+    set output to output & (id of m) & "\\t" & (name of account of mbox) & "\\t" & ${mailboxExpr} & "\\t" & (subject of m) & "\\t" & (sender of m) & "\\t" & (date received of m as string) & "\\t" & (read status of m) & "\\n"
   end repeat
   return output
 end tell`;

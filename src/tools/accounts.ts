@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { runAppleScript } from "../applescript.js";
+import { runAppleScript, escapeForAppleScript } from "../applescript.js";
 import { success, error, withErrorHandling } from "../helpers.js";
 
 export function registerAccountTools(server: McpServer) {
@@ -108,6 +108,22 @@ end tell`;
         }
       }
       return success(results);
+    }),
+  );
+
+  server.tool(
+    "mail_create_mailbox",
+    "Create a new mailbox (folder) in an account",
+    {
+      account: z.string().describe("Account name (e.g. 'iCloud')"),
+      name: z.string().describe("Mailbox name to create"),
+    },
+    withErrorHandling(async ({ account, name: mailboxName }) => {
+      const esc = escapeForAppleScript;
+      await runAppleScript(
+        `tell application "Mail" to make new mailbox with properties {name:"${esc(mailboxName)}"} at account "${esc(account)}"`,
+      );
+      return success({ account, mailbox: mailboxName, created: true });
     }),
   );
 }

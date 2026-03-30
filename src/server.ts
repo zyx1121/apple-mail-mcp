@@ -3,6 +3,7 @@ import { registerAccountTools } from "./tools/accounts.js";
 import { registerMessageTools } from "./tools/messages.js";
 import { registerSearchTools } from "./tools/search.js";
 import { registerComposeTools } from "./tools/compose.js";
+import { registerRuleTools } from "./tools/rules.js";
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -14,6 +15,7 @@ export function createServer(): McpServer {
   registerMessageTools(server);
   registerSearchTools(server);
   registerComposeTools(server);
+  registerRuleTools(server);
 
   return server;
 }
