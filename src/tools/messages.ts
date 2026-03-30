@@ -292,4 +292,68 @@ end tell`);
       return success({ message_id, deleted: true });
     }),
   );
+
+  server.tool(
+    "mail_list_attachments",
+    "List attachments of a message (name, size, MIME type)",
+    {
+      message_id: z.coerce.number().int().describe("Message ID"),
+      account: z.string().describe("Account name"),
+      mailbox: z.string().default("INBOX").describe("Mailbox name"),
+    },
+    withErrorHandling(async ({ message_id, account, mailbox }) => {
+      const esc = escapeForAppleScript;
+      const target = `mailbox "${esc(mailbox)}" of account "${esc(account)}"`;
+      const raw = await runAppleScript(`
+tell application "Mail"
+  set m to first message of ${target} whose id is ${message_id}
+  set atts to every mail attachment of m
+  set output to ""
+  repeat with a in atts
+    set mimeType to "unknown"
+    try
+      set mimeType to MIME type of a
+    end try
+    set output to output & (name of a) & "\\t" & mimeType & "\\t" & (file size of a) & "\\n"
+  end repeat
+  return output
+end tell`);
+
+      const attachments = raw
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => {
+          const parts = line.split("\t");
+          return { name: parts[0], mime_type: parts[1], size: parseInt(parts[2], 10) || 0 };
+        });
+
+      return success({ message_id, attachments });
+    }),
+  );
+
+  server.tool(
+    "mail_save_attachment",
+    "Save a specific attachment to disk by message ID and attachment name",
+    {
+      message_id: z.coerce.number().int().describe("Message ID"),
+      account: z.string().describe("Account name"),
+      mailbox: z.string().default("INBOX").describe("Mailbox name"),
+      attachment_name: z.string().describe("Name of the attachment to save"),
+      save_path: z.string().default("/tmp/").describe("Directory path to save the attachment to"),
+    },
+    withErrorHandling(async ({ message_id, account, mailbox, attachment_name, save_path }) => {
+      const esc = escapeForAppleScript;
+      const target = `mailbox "${esc(mailbox)}" of account "${esc(account)}"`;
+      await runAppleScript(`
+tell application "Mail"
+  set m to first message of ${target} whose id is ${message_id}
+  set atts to every mail attachment of m whose name is "${esc(attachment_name)}"
+  if (count of atts) is 0 then error "Attachment not found: ${esc(attachment_name)}"
+  set a to item 1 of atts
+  save a in POSIX file "${esc(save_path)}${esc(attachment_name)}"
+end tell`);
+
+      return success({ message_id, attachment_name, saved_to: `${save_path}${attachment_name}` });
+    }),
+  );
 }
