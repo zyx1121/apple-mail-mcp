@@ -262,15 +262,21 @@ end tell`);
       account: z.string().describe("Account name"),
       from_mailbox: z.string().default("INBOX").describe("Source mailbox name"),
       to_mailbox: z.string().describe("Destination mailbox name"),
+      to_account: z.string().optional().describe("Destination account name (if different from source account)"),
     },
-    withErrorHandling(async ({ message_id, account, from_mailbox, to_mailbox }) => {
+    withErrorHandling(async ({ message_id, account, from_mailbox, to_mailbox, to_account }) => {
       const esc = escapeForAppleScript;
+      const destAccount = to_account || account;
+      const isCrossAccount = destAccount !== account;
       await runAppleScript(`
 tell application "Mail"
   set m to first message of mailbox "${esc(from_mailbox)}" of account "${esc(account)}" whose id is ${message_id}
-  move m to mailbox "${esc(to_mailbox)}" of account "${esc(account)}"
+  ${isCrossAccount
+    ? `duplicate m to mailbox "${esc(to_mailbox)}" of account "${esc(destAccount)}"
+  delete m`
+    : `move m to mailbox "${esc(to_mailbox)}" of account "${esc(destAccount)}"`}
 end tell`);
-      return success({ message_id, moved_to: to_mailbox });
+      return success({ message_id, moved_to: to_mailbox, to_account: destAccount });
     }),
   );
 

@@ -1,6 +1,6 @@
 {
   "name": "@zyx1121/apple-mail-mcp",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "MCP server for Apple Mail — read, search, and manage emails via Claude Code",
   "type": "module",
   "main": "./dist/index.js",
