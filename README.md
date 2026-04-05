@@ -1,3 +1,13 @@
+```
+███╗   ███╗ █████╗ ██╗██╗     
+████╗ ████║██╔══██╗██║██║     
+██╔████╔██║███████║██║██║     
+██║╚██╔╝██║██╔══██║██║██║     
+██║ ╚═╝ ██║██║  ██║██║███████╗
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝
+                              
+```
+
 # @zyx1121/apple-mail-mcp
 
 MCP server for Apple Mail — read, search, compose, and manage emails via Claude Code.
